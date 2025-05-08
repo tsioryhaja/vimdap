@@ -1,3 +1,5 @@
 command! TestExec call dap#requests#test()
 command! TestFunc call dap#session#test_run_function()
 command! Breakpoint call dap#breakpoints#toggle(v:null, v:null)
+command! TestScratch call dap#repl#text_append_text()
+command! TestRepl call dap#repl#create_new_buf()
