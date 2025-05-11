@@ -1,13 +1,16 @@
-function! dap#tree#make_nodes()
+function! dap#tree#make_nodes(reference, name, expanded, level, _type)
+  let l:expandable = v:false
+  if a:reference > 0
+    let l:expandable = v:true
+  endif
   return {
-        \ "name": "",
-        \ "id": 0,
-        \ "expandable": v:false,
-        \ "expanded": v:false,
-        \ "reference": 0,
+        \ "name": a:name,
+        \ "expandable": l:expandable,
+        \ "expanded": a:expanded,
+        \ "reference": a:reference,
         \ "value": v:null,
-        \ "level": 0,
-        \ "type": ""
+        \ "level": a:level,
+        \ "type": a:_type
         \ }
 endfunction
 
@@ -44,3 +47,4 @@ function! dap#tree#render(node)
   endfor
   return l:to_return
 endfunction
+

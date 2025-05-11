@@ -86,3 +86,26 @@ endfunction
 
 function! dap#requests#response_configuration_done(session, result)
 endfunction
+
+function! dap#requests#variables(session, node, on_result)
+  let a:session.variables_request_seq_ref[a:session.seq] = a:node
+  let l:reference = a:node.reference
+  let l:param = {"variablesReference": l:reference}
+  call dap#session#send_request(a:session, "variables", l:param, a:on_result)
+endfunction
+
+function! dap#requests#response_variables(session, result)
+  let l:req_seq = a:result.request_seq
+  if has_key(a:session.variables_request_seq_ref, l:req_seq)
+    let l:variable = a:session.variables_request_seq_ref[l:req_seq]
+    let l:result = []
+    for l:d in a:result.body.variables
+      let l:node = dap#tree#make_nodes(l:d.variablesReference, l:d.name, v:false, l:variable.level + 1, l:d.type)
+      if l:node.expandable == v:false
+        let l:node.value = l:d.value
+      endif
+      call add(l:result, l:node)
+    endfor
+    let a:session.variables_request_seq_ref[l:req_seq].value = l:result
+  endif
+endfunction

@@ -64,6 +64,7 @@ function! dap#session#create(adapter, config)
   let l:dap_session.job_ids = []
   let l:dap_session.breakpoints = dap#breakpoints#get_breakpoints()
   let l:dap_session.current_breakpoint_request = 0
+  let l:dap_session.variables_request_seq_ref = {}
   " let l:dap_session.job_to_send = 0
   return l:dap_session
 endfunction
