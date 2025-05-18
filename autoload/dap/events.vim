@@ -46,6 +46,7 @@ function! dap#events#stopped(session, data)
   let l:source = l:current_frame.source
   if type(l:source) == v:t_dict
     exec ':keepalt edit +'.l:current_frame.line.' '.l:source.path
+    call sign_place(1, 'dap-stopped-group', 'dap-stopped', '%', {'lnum': l:current_frame.line, 'priority': 99})
   endif
 
 endfunction

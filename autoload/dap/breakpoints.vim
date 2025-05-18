@@ -35,6 +35,14 @@ endfunction
 function! dap#breakpoints#toggle(condition, hit_condition)
   let l:breakpoint_data = dap#breakpoints#get_current_position(a:condition, a:hit_condition)
   call dap#breakpoints#add(g:breakpoints, l:breakpoint_data)
+  let l:line = l:breakpoint_data.breakpoint.line
+  let l:buffer = l:breakpoint_data.buffer
+  let l:existing = sign_getplaced(l:buffer, {'group': 'dap-breakpoint-group', 'lnum': l:line})[0]['signs']
+  if empty(l:existing)
+    call sign_place(0, 'dap-breakpoint-group', 'dap-breakpoint', l:buffer, {'lnum': l:line, 'priority': 98})
+  else
+    call sign_unplace('dap-breakpoint-group', {'buffer': l:buffer, 'id': l:existing[0]['id']})
+  endif
 endfunction
 
 function! dap#breakpoints#get_breakpoints()
