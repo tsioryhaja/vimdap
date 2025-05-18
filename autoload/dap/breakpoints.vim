@@ -1,5 +1,8 @@
 let g:breakpoints = {}
 
+call sign_define('dap-breakpoint', {'text': 'B'})
+call sign_define('dap-stopped', {'text': '>'})
+
 let g:exception_breakpoints_filters = "default"
 let g:exception_breakpoints_filter_options = v:null
 

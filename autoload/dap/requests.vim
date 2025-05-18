@@ -109,3 +109,11 @@ function! dap#requests#response_variables(session, result)
     let a:session.variables_request_seq_ref[l:req_seq].value = l:result
   endif
 endfunction
+
+function! dap#requests#stack_trace(session, threadId)
+  let l:params = {
+        \ "startFrame": 0,
+        \ "threadId": a:threadId,
+        \ }
+  return dap#session#ask_request(a:session, "stackTrace", l:params)
+endfunction

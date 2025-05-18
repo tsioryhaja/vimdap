@@ -24,3 +24,11 @@ endfunction
 function! dap#job#kill(job_id)
   call job_stop(job_id)
 endfunction
+
+function! dap#job#eval(job_id, data)
+  if has('channel')
+    return ch_evalraw(a:job_id, a:data)
+  else
+    throw 'Use VIM with channel support'
+  endif
+endfunction

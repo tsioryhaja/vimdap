@@ -17,7 +17,37 @@ function! dap#events#thread(session, data)
   let a:session.threads[a:data.body.threadId] = l:result
 endfunction
 
+functio GetTopFrame(frames)
+  for l:frame in a:frames
+    if has_key(l:frame, 'source') && type(l:frame.source) == v:t_dict
+      return l:frame
+    endif
+  endfor
+  return a:frames[0]
+endfunction
+
 function! dap#events#stopped(session, data)
+  echo 'shit'
+  let l:stopped = a:data.body
+  if has_key(a:session.threads, l:stopped.threadId)
+    let a:session.threads[l:stopped.threadId].running = v:false
+  else
+    let a:session.threads[l:stopped.threadId] = {
+          \ "id": l:stopped.threadId,
+          \ "running": v:false,
+          \ }
+  endif
+  let to_jump = l:stopped.reason != 'pause'
+  let l:thread = a:session.threads[l:stopped.threadId]
+  let l:response = dap#requests#stack_trace(a:session, l:stopped.threadId)
+  let l:stackFrames = l:response.body.stackFrames
+  let l:current_frame = GetTopFrame(l:stackFrames)
+  call writefile([json_encode(l:current_frame)], 'test.txt', 'a')
+  let l:source = l:current_frame.source
+  if type(l:source) == v:t_dict
+    exec ':keepalt edit +'.l:current_frame.line.' '.l:source.path
+  endif
+
 endfunction
 
 let g:dap_events_handlers = {

@@ -40,6 +40,8 @@ function OnResponseStdout(session, message)
   if has_key(a:session.request_callbacks, a:message.request_seq)
     let l:RequestResponse = a:session.request_callbacks[a:message.request_seq]
     call l:RequestResponse(a:session, a:message)
+    unlet a:session.request_callbacks[a:message.request_seq]
+    unlet l:RequestResponse
   endif
 endfunction
 
@@ -93,7 +95,6 @@ function! dap#session#request(session, command, data)
   endif
 endfunction
 
-
 function! dap#session#send_request(session, command, data, on_result)
   " if a:session.job_to_send != 0
   let l:current_seq = a:session.seq
@@ -104,6 +105,36 @@ function! dap#session#send_request(session, command, data, on_result)
           \ 'arguments': a:data,
           \ }
     call dap#session#request(a:session, a:command, a:data)
+  endif
+endfunction
+
+function! dap#session#ask(session, command, data)
+  if has_key(a:session, 'job_to_send')
+    let l:params = {}
+    let l:params.seq = a:session.seq
+    let l:params.type = 'request'
+    let l:params.command = a:command
+    let l:params.arguments = a:data
+    let l:message_params = dap#utils#create_message(l:params)
+    let l:result = dap#job#eval(a:session.job_to_send, l:message_params)
+    let l:result = dap#utils#parse_messages(l:result)
+    let l:result = l:result[0]
+    let a:session.seq = a:session.seq + 1
+    call writefile([json_encode(l:result)], 'test.txt', 'a')
+    return l:result
+  endif
+  return v:null
+endfunction
+
+function! dap#session#ask_request(session, command, data)
+  " if a:session.job_to_send != 0
+  let l:current_seq = a:session.seq
+  if has_key(a:session, 'job_to_send')
+    let a:session.messages[l:current_seq] = {
+          \ 'command': a:command,
+          \ 'arguments': a:data,
+          \ }
+    return dap#session#ask(a:session, a:command, a:data)
   endif
 endfunction
 
