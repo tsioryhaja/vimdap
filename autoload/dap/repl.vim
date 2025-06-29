@@ -22,7 +22,8 @@ function! dap#repl#execute(session, text)
       call dap#repl#print(l:body.result)
     else
       let l:node = dap#tree#make_nodes(l:body.variablesReference, '', v:true, 0, l:body.type)
-      let l:results = dap#tree#render(a:session, l:node)
+      let l:node.rerender = l:node.sign
+      let l:results = dap#tree#render(a:session, l:node, l:node.sign)
       if len(l:results) > 0
         let l:results[0] = {"value": l:body.result, "sign": v:null}
       endif
