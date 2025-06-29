@@ -26,9 +26,12 @@ function! dap#tree#make_nodes(reference, name, expanded, level, _type)
         \ "value": v:null,
         \ "level": a:level,
         \ "type": a:_type,
+        \ "sign": v:null,
         \ "length": 1
         \ }
-  let l:node.sign = dap#tree#store_nodes(l:node)
+  if l:expandable == v:true
+    let l:node.sign = dap#tree#store_nodes(l:node)
+  endif
   return l:node
 endfunction
 
@@ -68,7 +71,7 @@ function! dap#tree#render(session, node)
     let l:value = l:value . a:node.value
   endif
   let l:result = l:result . l:value
-  let l:to_return = [l:result]
+  let l:to_return = [{"value": l:result, "sign": a:node.sign}]
   for l:cc in l:children
     call add(l:to_return, l:cc)
   endfor

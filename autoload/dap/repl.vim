@@ -24,8 +24,9 @@ function! dap#repl#execute(session, text)
       let l:node = dap#tree#make_nodes(l:body.variablesReference, '', v:true, 0, l:body.type)
       let l:results = dap#tree#render(a:session, l:node)
       if len(l:results) > 0
-        let l:results[0] = l:body.result
+        let l:results[0] = {"value": l:body.result, "sign": v:null}
       endif
+      call dap#repl#print({"value": string(l:results), "sign": v:null})
       for l:result in l:results
         call dap#repl#print(l:result)
       endfor
@@ -58,7 +59,12 @@ function! dap#repl#print(text)
   if s:repl_buf == v:null
     call dap#repl#create_new_buf()
   endif
-  call appendbufline(s:repl_buf, "$", a:text)
+  call appendbufline(s:repl_buf, "$", a:text.value)
+  echoerr a:text.sign
+  if a:text.sign != v:null
+    call sign_define(a:text.sign, {"text": "+"})
+    call sign_place(0, 'dapinfo', a:text.sign, s:repl_buf, {'lnum': line('$')})
+  endif
 endfunction
 
 function! dap#repl#text_append_text()
