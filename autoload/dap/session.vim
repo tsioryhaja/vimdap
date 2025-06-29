@@ -2,6 +2,7 @@ let s:jobid_session = {}
 let s:process_job = {}
 let s:channel_session = {}
 let s:channel_job = {}
+let s:stopped_session = []
 
 function OnStdout(channel_id, data)
   " echo s:channel_session[a:job_id]
@@ -69,6 +70,7 @@ function! dap#session#create(adapter, config)
   let l:dap_session.variables_request_seq_ref = {}
   let l:dap_session.processes = {}
   let l:dap_session.threads = {}
+  let l:dap_session.current_frame = v:null
   " let l:dap_session.job_to_send = 0
   return l:dap_session
 endfunction
@@ -136,6 +138,14 @@ function! dap#session#ask_request(session, command, data)
           \ }
     return dap#session#ask(a:session, a:command, a:data)
   endif
+endfunction
+
+function! dap#session#add_stopped_session(session)
+  call add(s:stopped_session, a:session)
+endfunction
+
+function! dap#session#get_stopped_sessions()
+  return s:stopped_session
 endfunction
 
 function! dap#session#spawn(session)

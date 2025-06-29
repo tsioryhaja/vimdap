@@ -27,8 +27,9 @@ functio GetTopFrame(frames)
 endfunction
 
 function! dap#events#stopped(session, data)
-  echo 'shit'
+  " echo 'shit'
   let l:stopped = a:data.body
+  call dap#session#add_stopped_session(a:session)
   if has_key(a:session.threads, l:stopped.threadId)
     let a:session.threads[l:stopped.threadId].running = v:false
   else
@@ -42,13 +43,13 @@ function! dap#events#stopped(session, data)
   let l:response = dap#requests#stack_trace(a:session, l:stopped.threadId)
   let l:stackFrames = l:response.body.stackFrames
   let l:current_frame = GetTopFrame(l:stackFrames)
+  let a:session.current_frame = l:current_frame
   call writefile([json_encode(l:current_frame)], 'test.txt', 'a')
   let l:source = l:current_frame.source
   if type(l:source) == v:t_dict
     exec ':keepalt edit +'.l:current_frame.line.' '.l:source.path
     call sign_place(1, 'dap-stopped-group', 'dap-stopped', '%', {'lnum': l:current_frame.line, 'priority': 99})
   endif
-
 endfunction
 
 let g:dap_events_handlers = {

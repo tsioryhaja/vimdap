@@ -110,10 +110,25 @@ function! dap#requests#response_variables(session, result)
   endif
 endfunction
 
+function! dap#requests#sync_variables(session, node)
+  let l:reference = a:node.reference
+  let l:params = {"variablesReference": l:reference}
+  return dap#session#ask_request(a:session, "variables", l:params)
+endfunction
+
 function! dap#requests#stack_trace(session, threadId)
   let l:params = {
         \ "startFrame": 0,
         \ "threadId": a:threadId,
         \ }
   return dap#session#ask_request(a:session, "stackTrace", l:params)
+endfunction
+
+function! dap#requests#sync_evaluate(session, expression, context, frameId)
+  let l:params = {
+        \ "expression": a:expression,
+        \ "context": a:context,
+        \ "frameId": a:frameId
+        \ }
+  return dap#session#ask_request(a:session, "evaluate", l:params)
 endfunction
