@@ -27,6 +27,7 @@ function! dap#tree#make_nodes(reference, name, expanded, level, _type)
         \ "level": a:level,
         \ "type": a:_type,
         \ "sign": v:null,
+        \ "rerender": v:null,
         \ "length": 1
         \ }
   if l:expandable == v:true
@@ -35,7 +36,8 @@ function! dap#tree#make_nodes(reference, name, expanded, level, _type)
   return l:node
 endfunction
 
-function! dap#tree#render(session, node)
+function! dap#tree#render(session, node, rerender)
+  let a:node.rerender = a:rerender
   let l:result = ""
   let l:i = 0
   let l:children = []
@@ -59,7 +61,7 @@ function! dap#tree#render(session, node)
         endfor
       endif
       for l:child in a:node.value
-        let l:c = dap#tree#render(a:session, l:child)
+        let l:c = dap#tree#render(a:session, l:child, a:rerender)
         for l:ch in l:c
           call add(l:children, l:ch)
         endfor
