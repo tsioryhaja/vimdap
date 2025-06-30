@@ -42,10 +42,22 @@ function! dap#repl#get_send_text()
   let l:texts = getbufline(s:repl_buf, 1, '$')
 endfunction
 
+function! dap#repl#trigger_actions(parameter)
+  let l:mode = v:null
+  if has_key(a:parameter, 'mode')
+    let l:mode = a:parameter.mode
+  endif
+  if l:mode == "anode"
+    let l:placed = sign_getplaced(s:repl_buf, {"group": "dapinfo", "lnum": line('.')})
+    call dap#repl#print({"value": string(l:placed), "sign": v:null})
+  endif
+endfunction
+
 function! dap#repl#create_new_buf()
   if s:repl_buf == v:null
     belowright new
     setlocal buftype=prompt bufhidden=hide noswapfile
+    nmap <buffer> <CR> :call dap#repl#trigger_actions({"mode": "anode"})<CR>
     let s:repl_buf = bufnr()
     setlocal nomodified
     autocmd TextChanged,TextChangedI <buffer> setlocal nomodified
