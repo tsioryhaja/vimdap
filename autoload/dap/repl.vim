@@ -25,11 +25,11 @@ function! dap#repl#execute(session, text)
       let l:node.rerender = l:node.sign
       let l:results = dap#tree#render(a:session, l:node, l:node.sign)
       if len(l:results) > 0
-        let l:results[0] = {"value": l:body.result, "sign": v:null}
+        let l:results[0] = {"value": l:body.result, "sign": v:null, "signs": []}
       endif
-      call dap#repl#print({"value": string(l:results), "sign": v:null})
+      " call dap#repl#print({"value": string(l:results), "sign": v:null})
       for l:result in l:results
-        call dap#repl#print(l:result)
+        call dap#repl#print(l:result, '$')
       endfor
     endif
   endif
@@ -68,16 +68,24 @@ function! dap#repl#create_new_buf()
   endif
 endfunction
 
-function! dap#repl#print(text)
+function! dap#repl#print(text, tline)
+  let l:cline = a:tline
+  if l:cline != '$'
+    let l:cline = l:cline + 1
+  endif
   if s:repl_buf == v:null
     call dap#repl#create_new_buf()
   endif
-  call appendbufline(s:repl_buf, "$", a:text.value)
-  echoerr a:text.sign
+  call appendbufline(s:repl_buf, a:tline, a:text.value)
+  " echoerr a:text.sign
   if a:text.sign != v:null
     call sign_define(a:text.sign, {"text": "+"})
-    call sign_place(0, 'dapinfo', a:text.sign, s:repl_buf, {'lnum': line('$')})
+    call sign_place(0, 'anchor_dapinfo', a:text.sign, s:repl_buf, {'lnum': line(l:cline)})
   endif
+  for l:sign_name in a:text.signs
+    call sign_define(l:sign_name)
+    call sign_place(0, 'dapinfo', l:sign_name, s:repl_buf, {'lnum': line(l:cline)})
+  endfor
 endfunction
 
 function! dap#repl#text_append_text()

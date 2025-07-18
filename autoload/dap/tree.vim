@@ -27,6 +27,7 @@ function! dap#tree#make_nodes(reference, name, expanded, level, _type)
         \ "level": a:level,
         \ "type": a:_type,
         \ "sign": v:null,
+        \ "signs": [],
         \ "rerender": v:null,
         \ "length": 1
         \ }
@@ -73,10 +74,17 @@ function! dap#tree#render(session, node, rerender)
     let l:value = l:value . a:node.value
   endif
   let l:result = l:result . l:value
-  let l:to_return = [{"value": l:result, "sign": a:node.sign}]
+  let l:to_return = [{"value": l:result, "sign": a:node.sign, "signs": []}]
   for l:cc in l:children
     call add(l:to_return, l:cc)
   endfor
+  if a:node.sign != v:null
+    " call add(l:to_return[0]['signs'], a:node.sign)
+    let l:last_element_index = len(l:to_return) - 1
+    let l:last_element = l:to_return[l:last_element_index]
+    let l:end_sign = "end_" . a:node.sign
+    call add(l:last_element["signs"], l:end_sign)
+  endif
   let a:node.length = len(l:to_return)
   return l:to_return
 endfunction
