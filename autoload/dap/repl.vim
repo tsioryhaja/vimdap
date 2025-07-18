@@ -28,8 +28,12 @@ function! dap#repl#execute(session, text)
         let l:results[0] = {"value": l:body.result, "sign": v:null, "signs": []}
       endif
       " call dap#repl#print({"value": string(l:results), "sign": v:null})
-      for l:result in l:results
-        call dap#repl#print(l:result, '$')
+			let l:cline = line('$')
+			let l:i = 0
+			for l:result in l:results
+				let l:c_line = l:cline + l:i
+        call dap#repl#print(l:result, l:c_line)
+				let l:i = l:i + 1
       endfor
     endif
   endif
@@ -80,11 +84,13 @@ function! dap#repl#print(text, tline)
   " echoerr a:text.sign
   if a:text.sign != v:null
     call sign_define(a:text.sign, {"text": "+"})
-    call sign_place(0, 'anchor_dapinfo', a:text.sign, s:repl_buf, {'lnum': line(l:cline)})
+    " call sign_place(0, 'anchor_dapinfo', a:text.sign, s:repl_buf, {'lnum': line(l:cline)})
+    call sign_place(0, 'anchor_dapinfo', a:text.sign, s:repl_buf, {'lnum': l:cline})
   endif
   for l:sign_name in a:text.signs
     call sign_define(l:sign_name)
-    call sign_place(0, 'dapinfo', l:sign_name, s:repl_buf, {'lnum': line(l:cline)})
+    " call sign_place(0, 'dapinfo', l:sign_name, s:repl_buf, {'lnum': line(l:cline)})
+    call sign_place(0, 'dapinfo', l:sign_name, s:repl_buf, {'lnum': l:cline})
   endfor
 endfunction
 
