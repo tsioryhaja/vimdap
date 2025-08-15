@@ -129,7 +129,6 @@ function! dap#session#ask(session, command, data)
 endfunction
 
 function! dap#session#ask_request(session, command, data)
-  " if a:session.job_to_send != 0
   let l:current_seq = a:session.seq
   if has_key(a:session, 'job_to_send')
     let a:session.messages[l:current_seq] = {
@@ -184,10 +183,10 @@ function! dap#session#test_run_function()
   let l:adapter = {
         \ 'type': 'executable',
         \ 'command': 'python',
-        \ 'args': ['C:\tools\debugpy\bundled\libs\debugpy\adapter']
+        \ 'args': ['/home/kazeht/.dap-adapters/debugpy/src/debugpy/adapter']
         \ }
+  " let l:session = dap#session#create()
   let l:session = dap#session#create(l:adapter, l:config)
   call dap#session#start(l:session)
-  " let l:session = dap#session#create(l:adapter, l:config)
   " call dap#session#spawn(l:session, function('OnResult'))
 endfunction

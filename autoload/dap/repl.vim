@@ -19,7 +19,7 @@ function! dap#repl#execute(session, text)
     let l:body = l:evaluate_result.body
     if l:body.variablesReference <= 0
       call printf(l:body.result)
-      call dap#repl#print(l:body.result)
+      call dap#repl#print(l:body.result, line('$'))
     else
       let l:node = dap#tree#make_nodes(l:body.variablesReference, '', v:true, 0, l:body.type)
       let l:node.rerender = l:node.sign
@@ -47,14 +47,85 @@ function! dap#repl#get_send_text()
 endfunction
 
 function! dap#repl#trigger_actions(parameter)
+	let l:session = dap#session#get_stopped_sessions()
   let l:mode = v:null
   if has_key(a:parameter, 'mode')
     let l:mode = a:parameter.mode
   endif
   if l:mode == "anode"
-    let l:placed = sign_getplaced(s:repl_buf, {"group": "dapinfo", "lnum": line('.')})
-    call dap#repl#print({"value": string(l:placed), "sign": v:null})
+    let l:placed = sign_getplaced(s:repl_buf, {"group": "anchor_dapinfo", "lnum": line('.')})
+		let l:placed = l:placed[0]
+    " call dap#repl#print({"value": string(l:placed), "sign": v:null})
+		let l:len_signs = len(l:placed.signs)
+		if l:len_signs > 1
+			echoerr "weird situation where we hve two anchor on a same line"
+		else
+			if l:len_signs == 1
+				let l:placed_sign = l:placed.signs[0]
+				let l:sign_name = l:placed_sign.name
+				let l:sign_name = substitute(l:sign_name, "nodeid_", "", "g")
+				let l:sign_id = str2nr(l:sign_name)
+				let l:select_node = dap#tree#get_node_by_id(l:sign_id)
+				call s:rewrite_node(l:session, l:select_node)
+			endif
+		endif
   endif
+endfunction
+
+function s:rewrite_node(session, node)
+	" echoerr string(a:node)
+	let l:line = line('.')
+	let l:render_result = dap#tree#render(a:session, a:node, a:node.rerender)
+	let l:length = len(l:render_result)
+	" echoerr string(l:length)
+	let l:i = 0
+	for l:line_value in l:render_result
+		let l:lnum = l:line + l:i
+    let l:placed = sign_getplaced(s:repl_buf, {"group": "dapinfo", "lnum": l:lnum})
+		let l:placed = l:placed[0]
+		for l:sign in l:placed.signs
+			call sign_unplace("dapinfo", {"buffer": s:repl_buf, "id": l:sign.id})
+		endfor
+		" echoerr string(l:line_value)
+		let l:anchor_placed = sign_getplaced(s:repl_buf, {"group": "anchor_dapinfo", "lnum": l:lnum})
+		let l:anchor_placed = l:anchor_placed[0]
+		for l:sign in l:anchor_placed.signs
+			call sign_unplace("anchor_dapinfo", {"buffer": s:repl_buf, "id": l:sign.id})
+		endfor
+		let l:i = l:i + 1
+	endfor
+	let l:first = l:line
+	let l:last = l:first + l:length - 1
+	call deletebufline(s:repl_buf, l:first, l:last)
+	if a:node.expanded
+		let a:node.expanded = v:false
+	else
+		let a:node.expanded = v:true
+	endif
+	let l:rendered = dap#tree#render(a:session[0], a:node, a:node.rerender)
+	let l:ii = - 1
+	for l:to_render in l:rendered
+		call dap#repl#print(l:to_render, l:line + l:ii)
+		let l:ii = l:ii + 1
+	endfor
+endfunction
+
+function s:unplace_signs(render_result, line_number)
+	let l:i = 0
+	for l:line_value in a:render_result
+		let l:lnum = a:line_number + l:i
+    let l:placed = sign_getplaced(s:repl_buf, {"group": "dapinfo", "lnum": l:lnum})
+		let l:placed = l:placed[0]
+		for l:sign in l:placed.signs
+			call sign_unplace("dapinfo", {"buffer": s:repl_buf, "id": l:sign.id})
+		endfor
+		let l:anchor_placed = sign_getplaced(s:repl_buf, {"group": "anchor_dapinfo", "lnum": l:lnum})
+		let l:anchor_placed = l:anchor_placed[0]
+		for l:sign in l:anchor_placed.signs
+			call sign_unplace("anchor_dapinfo", {"buffer": s:repl_buf, "id": l:sign.id})
+		endfor
+		let l:i = l:i + 1
+	endfor
 endfunction
 
 function! dap#repl#create_new_buf()
