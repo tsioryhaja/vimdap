@@ -6,7 +6,7 @@ endfunction
 
 function! dap#tree#get_node_by_id(id)
 	let l:_id = a:id + 1
-	if len(s:nodes) > l:_id
+	if len(s:nodes) < l:_id
 		return v:null
 	endif
 	return s:nodes[a:id]

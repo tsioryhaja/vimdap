@@ -65,7 +65,9 @@ function! dap#repl#trigger_actions(parameter)
 				let l:sign_name = l:placed_sign.name
 				let l:sign_name = substitute(l:sign_name, "nodeid_", "", "g")
 				let l:sign_id = str2nr(l:sign_name)
+				" echoerr l:sign_id
 				let l:select_node = dap#tree#get_node_by_id(l:sign_id)
+				" echoerr string(l:select_node)
 				call s:rewrite_node(l:session, l:select_node)
 			endif
 		endif
@@ -75,6 +77,7 @@ endfunction
 function s:rewrite_node(session, node)
 	" echoerr string(a:node)
 	let l:line = line('.')
+	" echoerr string(a:node)
 	let l:render_result = dap#tree#render(a:session, a:node, a:node.rerender)
 	let l:length = len(l:render_result)
 	" echoerr string(l:length)
