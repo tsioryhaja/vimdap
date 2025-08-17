@@ -112,3 +112,6 @@ function! dap#tree#render(session, node, rerender)
   return l:to_return
 endfunction
 
+function! dap#tree#clear_nodes()
+	let s:nodes = []
+endfunction

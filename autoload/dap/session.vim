@@ -3,6 +3,7 @@ let s:process_job = {}
 let s:channel_session = {}
 let s:channel_job = {}
 let s:stopped_session = []
+let s:running_session = []
 
 function OnStdout(channel_id, data)
   " echo s:channel_session[a:job_id]
@@ -37,6 +38,10 @@ function! HandelStdout(session, data)
 endfunction
 
 function OnResponseStdout(session, message)
+	if !a:message.success
+		echoerr a:message.message
+		echoerr string(a:message.body)
+	endif
   call writefile([json_encode(a:message)], 'test.txt', 'a')
   if has_key(a:session.request_callbacks, a:message.request_seq)
     let l:RequestResponse = a:session.request_callbacks[a:message.request_seq]
@@ -81,6 +86,7 @@ function! dap#session#start(session)
   if l:adapter.type == 'executable'
     call dap#session#spawn(a:session)
     call dap#requests#initialize(a:session, function('dap#requests#response_initialize'))
+		call add(s:running_session, a:session)
   endif
 endfunction
 
@@ -147,6 +153,10 @@ function! dap#session#get_stopped_sessions()
   return s:stopped_session
 endfunction
 
+function! dap#session#get_running_sessions()
+	return s:running_session
+endfunction
+
 function! dap#session#spawn(session)
   let l:adapter = a:session.adapter
   if l:adapter is v:null
@@ -189,4 +199,20 @@ function! dap#session#test_run_function()
   let l:session = dap#session#create(l:adapter, l:config)
   call dap#session#start(l:session)
   " call dap#session#spawn(l:session, function('OnResult'))
+endfunction
+
+function! dap#session#step_action(action)
+	let l:sessions = dap#session#get_stopped_sessions()
+	for l:session in l:sessions
+		for [l:key, l:thread] in items(l:session.threads)
+			if l:thread.running == v:false
+				call dap#requests#step_action(l:session, a:action, l:thread.id, function("dap#requests#response_continue"))
+			endif
+		endfor
+	endfor
+endfunction
+
+function!dap#session#resume(session)
+	let l:session_index = index(s:stopped_session, a:session)
+	call remove(s:stopped_session, l:session_index)
 endfunction

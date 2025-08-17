@@ -32,13 +32,14 @@ endfunction
 function! dap#requests#response_launch_or_attach(session, result)
 endfunction
 
-function! dap#requests#set_breakpoints(session, breakpoints, on_result)
+function! dap#requests#set_breakpoints(session, breakpoints)
   for l:content in a:breakpoints
     let l:source = l:content[0]
     let l:data = l:content[1]
     let l:breakpoint_arguments = dap#breakpoints#make_set_breakpoints_arguments(l:data)
     call writefile([json_encode(l:breakpoint_arguments)], 'test.txt', 'a')
-    call dap#session#send_request(a:session, "setBreakpoints", l:breakpoint_arguments, a:on_result)
+    " call dap#session#send_request(a:session, "setBreakpoints", l:breakpoint_arguments, a:on_result)
+    call dap#session#ask_request(a:session, "setBreakpoints", l:breakpoint_arguments)
   endfor
 endfunction
 
@@ -47,15 +48,8 @@ endfunction
 
 function! dap#requests#set_all_breakpoints(session)
   let l:breakpoints = items(dap#breakpoints#get_breakpoints())
-  let a:session.current_breakpoint_request = len(l:breakpoints)
-  call dap#requests#set_breakpoints(a:session, l:breakpoints, function("dap#requests#response_set_all_breakpoints"))
-endfunction
-
-function! dap#requests#response_set_all_breakpoints(session, result)
-  let a:session.current_breakpoint_request = a:session.current_breakpoint_request - 1
-  if a:session.current_breakpoint_request <= 0
-    call dap#requests#set_exception_breakpoints(a:session, function("dap#requests#response_set_exception_breakpoints"))
-  endif
+  call dap#requests#set_breakpoints(a:session, l:breakpoints)
+	call dap#requests#set_exception_breakpoints(a:session, function("dap#requests#response_set_exception_breakpoints"))
 endfunction
 
 function! dap#requests#set_exception_breakpoints(session, on_result)
@@ -74,6 +68,38 @@ endfunction
 function! dap#requests#response_set_exception_breakpoints(session, result)
   call dap#requests#configuration_done(a:session, function("dap#requests#response_configuration_done"))
 endfunction
+
+function! dap#requests#response_continue(session, result)
+	if a:result.success == v:true
+		call s:clear_all_params(a:session)
+		call dap#session#resume(a:session)
+		call s:set_threads_running(a:session)
+	endif
+endfunction
+
+function! dap#requests#step_action(session, action, threadId, on_result)
+	let l:params = {
+				\ "threadId": a:threadId
+				\ }
+	call dap#session#send_request(a:session, a:action, l:params, a:on_result)
+endfunction
+
+
+function s:clear_all_params(session)
+	" remove the sign for the stopped
+	call sign_unplace("dap-stopped-group")
+	call dap#repl#clear_signs()
+	call dap#tree#clear_nodes()
+endfunction
+
+function s:set_threads_running(session)
+	for [l:key, l:thread] in items(a:session.threads)
+		if l:thread.running == v:false
+			let l:thread.running = v:true
+		endif
+	endfor
+endfunction
+
 
 function! dap#requests#configuration_done(session, on_result)
   if has_key(a:session.capabilities, "supportsConfigurationDoneRequest")

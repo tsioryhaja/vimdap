@@ -43,6 +43,12 @@ function! dap#breakpoints#toggle(condition, hit_condition)
   else
     call sign_unplace('dap-breakpoint-group', {'buffer': l:buffer, 'id': l:existing[0]['id']})
   endif
+	let l:sessions = dap#session#get_running_sessions()
+	for l:session in l:sessions
+		let l:breakpoint_toggle = dap#breakpoints#get_container(g:breakpoints, l:breakpoint_data)
+		call dap#requests#set_breakpoints(l:session, [l:breakpoint_toggle])
+		" setBreakpoints for the current file
+	endfor
 endfunction
 
 function! dap#breakpoints#get_breakpoints()
@@ -77,6 +83,19 @@ function! dap#breakpoints#make_data(bufid, line, condition, hit_condition)
     let l:breakpoint_data.breakpoint.hit_condition = a:hit_condition
   endif
   return l:breakpoint_data
+endfunction
+
+function! dap#breakpoints#get_container(container, data)
+	let l:bufname = a:data.name
+	if !has_key(a:container, l:bufname)
+		let a:container[l:bufname] = {
+          \ "name": a:data.name,
+          \ "buffer": a:data.buffer,
+          \ "source": a:data.source,
+          \ "breakpoints": []
+          \ }
+	endif
+	return [l:bufname, a:container[l:bufname]]
 endfunction
 
 function! dap#breakpoints#add(container, data)

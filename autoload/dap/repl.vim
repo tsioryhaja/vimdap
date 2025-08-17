@@ -48,6 +48,7 @@ endfunction
 
 function! dap#repl#trigger_actions(parameter)
 	let l:session = dap#session#get_stopped_sessions()
+	let l:session = l:session[0]
   let l:mode = v:null
   if has_key(a:parameter, 'mode')
     let l:mode = a:parameter.mode
@@ -182,4 +183,10 @@ function! dap#repl#test_rewrite()
   let l:l_count2 = l:l_count - 3
   call deletebufline(s:repl_buf, l:l_count4, l:l_count2)
   call appendbufline(s:repl_buf, l:l_count4, "toto")
+endfunction
+
+function! dap#repl#clear_signs()
+	if s:repl_buf != v:null
+		call sign_unplace("*", {"buffer": s:repl_buf})
+	endif
 endfunction

@@ -17,3 +17,4 @@ endfunction
 function! dap#configs#add_config(configs)
   let g:configs[a:name] = a:configs
 endfunction
+
