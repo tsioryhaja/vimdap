@@ -157,6 +157,14 @@ function! dap#session#get_running_sessions()
 	return s:running_session
 endfunction
 
+function! dap#session#terminate(session)
+	call dap#requests#terminate(a:session, v:false)
+endfunction
+
+function! dap#session#restart(session)
+	call dap#requests#terminate(a:session, v:true)
+endfunction
+
 function! dap#session#spawn(session)
   let l:adapter = a:session.adapter
   if l:adapter is v:null

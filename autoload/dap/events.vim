@@ -3,6 +3,13 @@ function! dap#events#initialized(session, data)
 endfunction
 
 function! dap#events#output(session, data)
+	let l:body = a:data.body
+	if !has_key(l:body, "category")
+		let l:body.category = "console"
+	endif
+	if l:body.category != "telemetry"
+		call dap#repl#console_print(l:body.output)
+	endif
 endfunction
 
 function! dap#events#process(session, data)

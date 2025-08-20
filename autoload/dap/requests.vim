@@ -154,7 +154,14 @@ function! dap#requests#sync_evaluate(session, expression, context, frameId)
   let l:params = {
         \ "expression": a:expression,
         \ "context": a:context,
-        \ "frameId": a:frameId
+        \ "frameId": a:frameId,
         \ }
   return dap#session#ask_request(a:session, "evaluate", l:params)
+endfunction
+
+function! dap#requests#terminate(session, restart)
+	let l:params = {
+				\ "restart": a:restart
+				\ }
+	return dap#session#ask_request(a:session, "terminate", l:params)
 endfunction

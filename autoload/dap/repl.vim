@@ -106,7 +106,7 @@ function s:rewrite_node(session, node)
 	else
 		let a:node.expanded = v:true
 	endif
-	let l:rendered = dap#tree#render(a:session[0], a:node, a:node.rerender)
+	let l:rendered = dap#tree#render(a:session, a:node, a:node.rerender)
 	let l:ii = - 1
 	for l:to_render in l:rendered
 		call dap#repl#print(l:to_render, l:line + l:ii)
@@ -145,6 +145,13 @@ function! dap#repl#create_new_buf()
   else
     execute "belowright sbuffer" . s:repl_buf
   endif
+endfunction
+
+function! dap#repl#console_print(text)
+  if s:repl_buf == v:null
+    call dap#repl#create_new_buf()
+  endif
+	call appendbufline(s:repl_buf, "$", a:text)
 endfunction
 
 function! dap#repl#print(text, tline)
