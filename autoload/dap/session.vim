@@ -76,6 +76,7 @@ function! dap#session#create(adapter, config)
   let l:dap_session.processes = {}
   let l:dap_session.threads = {}
   let l:dap_session.current_frame = v:null
+	let l:dap_session.stopped_thread_id = v:null
   " let l:dap_session.job_to_send = 0
   return l:dap_session
 endfunction
@@ -157,6 +158,20 @@ function! dap#session#get_running_sessions()
 	return s:running_session
 endfunction
 
+function! dap#session#terminate_current()
+	let l:sessions = dap#session#get_running_sessions()
+	for l:session in l:sessions
+		call dap#session#terminate(l:session)
+	endfor
+endfunction
+
+function! dap#session#restart_current()
+	let l:sessions = dap#session#get_running_sessions()
+	for l:session in l:sessions
+		call dap#session#restart(l:session)
+	endfor
+endfunction
+
 function! dap#session#terminate(session)
 	call dap#requests#terminate(a:session, v:false)
 endfunction
@@ -212,15 +227,30 @@ endfunction
 function! dap#session#step_action(action)
 	let l:sessions = dap#session#get_stopped_sessions()
 	for l:session in l:sessions
-		for [l:key, l:thread] in items(l:session.threads)
+		" for [l:key, l:thread] in items(l:session.threads)
+		if l:session.stopped_thread_id != v:null
+			let l:thread = l:session.threads[l:session.stopped_thread_id]
 			if l:thread.running == v:false
 				call dap#requests#step_action(l:session, a:action, l:thread.id, function("dap#requests#response_continue"))
 			endif
-		endfor
+		endif
+		" endfor
 	endfor
 endfunction
 
-function!dap#session#resume(session)
+function! dap#session#resume(session)
 	let l:session_index = index(s:stopped_session, a:session)
 	call remove(s:stopped_session, l:session_index)
+endfunction
+
+function! dap#session#set_all_threads_running(session)
+	for [l:key, l:thread] in items(a:session.threads)
+		let l:thread.running = v:true
+	endfor
+endfunction
+
+function! dap#session#set_all_threads_stopped(session)
+	for [l:key, l:thread] in items(a:session.threads)
+		let l:thread.running = v:false
+	endfor
 endfunction

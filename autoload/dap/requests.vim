@@ -73,7 +73,14 @@ function! dap#requests#response_continue(session, result)
 	if a:result.success == v:true
 		call s:clear_all_params(a:session)
 		call dap#session#resume(a:session)
-		call s:set_threads_running(a:session)
+		if has_key(a:result, "body")
+			if has_key(a:result.body, "allThreadsContinued")
+				if a:result.body.allThreadsContinued
+					call dap#session#set_all_threads_running(a:session) 
+				endif
+			endif
+		endif
+		" call s:set_threads_running(a:session)
 	endif
 endfunction
 

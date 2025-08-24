@@ -16,6 +16,17 @@ function! dap#events#process(session, data)
   let a:session.processes[a:data.body.systemProcessId] = a:data.body
 endfunction
 
+function! dap#events#continued(session, data)
+	let l:threadId = a:data.body.threadId
+	let a:session.threads[l:threadId].running = v:true
+	let a:session.stopped_thread_id = v:null
+	if has_key(a:data.body, "allThreadsContinued")
+		if a:data.body.allThreadsContinued
+			call dap#session#set_all_threads_running(a:session) 
+		endif
+	endif
+endfunction
+
 function! dap#events#thread(session, data)
   let l:result = {
         \ "running": v:true,
@@ -37,6 +48,7 @@ function! dap#events#stopped(session, data)
   " echo 'shit'
   let l:stopped = a:data.body
   call dap#session#add_stopped_session(a:session)
+	let a:session.stopped_thread_id = l:stopped.threadId
   if has_key(a:session.threads, l:stopped.threadId)
     let a:session.threads[l:stopped.threadId].running = v:false
   else
@@ -45,6 +57,11 @@ function! dap#events#stopped(session, data)
           \ "running": v:false,
           \ }
   endif
+	if has_key(l:stopped, "allThreadsStopped")
+		if l:stopped.allThreadsStopped
+			call dap#session#set_all_threads_stopped(a:session)
+		endif
+	endif
   let to_jump = l:stopped.reason != 'pause'
   let l:thread = a:session.threads[l:stopped.threadId]
   let l:response = dap#requests#stack_trace(a:session, l:stopped.threadId)
@@ -65,6 +82,7 @@ let g:dap_events_handlers = {
       \ "process": function('dap#events#process'),
       \ "thread": function('dap#events#thread'),
       \ "stopped": function('dap#events#stopped'),
+			\ "continued": function('dap#events#continued'),
       \ }
 
 function! dap#events#get_event_handler(event_name)
