@@ -266,3 +266,8 @@ function! dap#session#set_all_threads_stopped(session)
 		let l:thread.running = v:false
 	endfor
 endfunction
+
+function! dap#session#start_debug(config, adapter)
+	let l:session = dap#session#create(a:adapter, a:config)
+	call dap#session#start(l:session)
+endfunction
