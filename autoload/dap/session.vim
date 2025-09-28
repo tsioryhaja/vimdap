@@ -91,6 +91,18 @@ function! dap#session#start(session)
   endif
 endfunction
 
+function! dap#session#remove_from_running_sessions(session)
+	let l:session_index = index(s:running_session, a:session)
+	call remove(s:running_session, l:session_index)
+endfunction
+
+function! dap#session#remove_from_channel(session)
+	for l:job in a:session.job_ids
+		let l:channel = job_getchannel(l:job)
+		unlet s:channel_session[l:channel]
+	endfor
+endfunction
+
 function! dap#session#request(session, command, data)
   if has_key(a:session, 'job_to_send')
     let l:params = {}
@@ -190,10 +202,10 @@ function! dap#session#spawn(session)
   let a:session.job_to_send = l:job
   call add(a:session.job_ids, l:job)
   let l:jobinfo = job_info(l:job)
-  let s:jobid_session[l:job] = a:session
-  let s:process_job[l:jobinfo.process] = a:session
+  " let s:jobid_session[l:job] = a:session
+  " let s:process_job[l:jobinfo.process] = a:session
   let s:channel_session[job_getchannel(l:job)] = a:session
-  let s:channel_job[job_getchannel(l:job)] = l:job
+  " let s:channel_job[job_getchannel(l:job)] = l:job
 endfunction
 
 " function! dap#session#start(session)

@@ -76,6 +76,13 @@ function! dap#events#stopped(session, data)
   endif
 endfunction
 
+function! dap#events#exited(session, data)
+endfunction
+
+function! dap#events#terminated(session, data)
+endfunction
+
+" use terminated for cleaning session but not exited
 let g:dap_events_handlers = {
       \ "initialized": function('dap#events#initialized'),
       \ "output": function('dap#events#output'),
@@ -83,6 +90,7 @@ let g:dap_events_handlers = {
       \ "thread": function('dap#events#thread'),
       \ "stopped": function('dap#events#stopped'),
 			\ "continued": function('dap#events#continued'),
+			\ "terminated": function('dap#events#terminated')
       \ }
 
 function! dap#events#get_event_handler(event_name)
