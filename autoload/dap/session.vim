@@ -88,6 +88,7 @@ function! dap#session#start(session)
     call dap#session#spawn(a:session)
     call dap#requests#initialize(a:session, function('dap#requests#response_initialize'))
 		call add(s:running_session, a:session)
+	elseif l:adapter.type == 'server'
   endif
 endfunction
 
@@ -194,11 +195,20 @@ endfunction
 
 function! dap#session#spawn(session)
   let l:adapter = a:session.adapter
+	let l:config = a:session.config
   if l:adapter is v:null
     throw 'No adapter configured for this new session'
   endif
   let l:command_to = [l:adapter.command] + l:adapter.args
-  let l:job = dap#job#spawn(l:command_to, function('OnStdout'), function('OnStderr'), function('OnExit'))
+	let l:spawn_params = {
+				\ "stdio": [function('OnStdout'), function('OnStderr'), function('OnExit')],
+				\ "env": {},
+				\ }
+	if has_key(l:config, "env")
+		let l:spawn_params["env"] = l:config.env
+	endif
+  " let l:job = dap#job#spawn(l:command_to, function('OnStdout'), function('OnStderr'), function('OnExit'))
+  let l:job = dap#job#spawn(l:command_to, l:spawn_params)
   let a:session.job_to_send = l:job
   call add(a:session.job_ids, l:job)
   let l:jobinfo = job_info(l:job)

@@ -1,9 +1,13 @@
-function! dap#job#spawn(commands, on_stdout, on_stderr, on_exit)
+function! dap#job#spawn(commands, params)
+	let l:OnStdout = a:params["stdio"][0]
+	let l:OnStderr = a:params["stdio"][1]
+	let l:OnExit = a:params["stdio"][2]
   if has('job')
     let l:second_params = {'mode': 'raw', 
-          \ 'out_cb': {job_id, data -> a:on_stdout(job_id, data)},
-          \ 'err_cb': {job_id, data -> a:on_stderr(job_id, data)},
-          \ 'exit_cb': {job_id, data -> a:on_exit(job_id, data)},
+          \ 'out_cb': {job_id, data -> l:OnStdout(job_id, data)},
+          \ 'err_cb': {job_id, data -> l:OnStderr(job_id, data)},
+          \ 'exit_cb': {job_id, data -> l:OnExit(job_id, data)},
+					\ 'env': a:params.env,
           \ }
     let l:job_id = job_start(a:commands, l:second_params)
     return l:job_id
