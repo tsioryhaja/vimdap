@@ -1,20 +1,9 @@
-" let s:jobid_session = {}
-" let s:process_job = {}
 let s:channel_session = {}
 let s:channel_job = {}
 let s:stopped_session = []
 let s:running_session = []
 
 function OnStdout(channel_id, data)
-  " echo s:channel_session[a:job_id]
-  " echo s:jobid_session
-  " try
-  " let l:session = s:channel_session[a:job_id]
-  " call writefile([a:data, json_encode(l:shit)], 'test.txt', 'a')
-  " catch
-  "   " call writefile(['\n', a:data], 'test.txt', 'a')
-  "   echo "shit"
-  " endtry
   let l:messages = dap#utils#parse_messages(a:data)
   let l:session = s:channel_session[a:channel_id]
   for l:message in l:messages
@@ -218,18 +207,13 @@ function! dap#session#spawn(session)
 	if has_key(l:config, "env")
 		let l:spawn_params["env"] = l:config.env
 	endif
-  " let l:job = dap#job#spawn(l:command_to, function('OnStdout'), function('OnStderr'), function('OnExit'))
   let l:job = dap#job#spawn(l:command_to, l:spawn_params)
   let a:session.job_to_send = l:job
   call add(a:session.job_ids, l:job)
   let l:jobinfo = job_info(l:job)
-  " let s:jobid_session[l:job] = a:session
-  " let s:process_job[l:jobinfo.process] = a:session
   let s:channel_session[job_getchannel(l:job)] = a:session
-  " let s:channel_job[job_getchannel(l:job)] = l:job
 endfunction
 
-" to use for terminated event
 function! dap#session#end_spawned(session)
 	call remove(s:channel_session, job_getchannel(a:session.job_to_send))
 	call dap#job#end_spawned(a:session.job_to_send)
