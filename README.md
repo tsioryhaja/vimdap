@@ -72,3 +72,7 @@ It will need you to have a minimal understanding of the DAP protocol and how you
 It will also not give you an IDE like UI. It's supposed to be minimalist.  
 If you need al of that, I think you should use [vimspector](https://github.com/puremourning/vimspector).   
 It is also a well proven solution (a coworker of mine uses it). It's just not really the kind of experience I want to have when I debug, but it's actually great.
+
+## Keep in mind.
+
+This is still an experimental project, It's not ready to use, It should work but may have some bug, and it's still an ongoing project and not a finished one.   
