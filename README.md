@@ -1,6 +1,6 @@
 # VIM Debug Adapter Protocol client
 
-This project is a debug adapter protocol for VIM.   
+This project is a debug adapter protocol client for VIM.   
 It is supposed to be used with a low end and old computer.  
 It was not really made to be ready to use, it was made to be easily configurable.  
 
