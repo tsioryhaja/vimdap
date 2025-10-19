@@ -1,5 +1,5 @@
-let s:jobid_session = {}
-let s:process_job = {}
+" let s:jobid_session = {}
+" let s:process_job = {}
 let s:channel_session = {}
 let s:channel_job = {}
 let s:stopped_session = []
@@ -92,6 +92,15 @@ function! dap#session#start(session)
   endif
 endfunction
 
+function! dap#session#on_terminated(session)
+	let l:adapter = a:session.adapter
+	if l:adapter.type == 'executable'
+		call dap#session#end_spawned(a:session)
+		call dap#session#remove_from_running_sessions(a:session)
+	elseif l:adapter.type == 'server'
+	endif
+endfunction
+
 function! dap#session#remove_from_running_sessions(session)
 	let l:session_index = index(s:running_session, a:session)
 	call remove(s:running_session, l:session_index)
@@ -100,7 +109,9 @@ endfunction
 function! dap#session#remove_from_channel(session)
 	for l:job in a:session.job_ids
 		let l:channel = job_getchannel(l:job)
-		unlet s:channel_session[l:channel]
+		if has_key(s:channel_session, l:channel)
+			unlet s:channel_session[l:channel]
+		endif
 	endfor
 endfunction
 
@@ -218,32 +229,14 @@ function! dap#session#spawn(session)
   " let s:channel_job[job_getchannel(l:job)] = l:job
 endfunction
 
-" function! dap#session#start(session)
-"   call dap#session#spawn(a:session)
-"   call dap#requests#initialize(a:session, function('dap#requests#response_initialize'))
-" endfunction
-
-function OnResult()
+" to use for terminated event
+function! dap#session#end_spawned(session)
+	call remove(s:channel_session, job_getchannel(a:session.job_to_send))
+	call dap#job#end_spawned(a:session.job_to_send)
+	" call dap#session#remove_from_channel(a:session)
 endfunction
 
-function! dap#session#test_run_function()
-  " let l:adapter = {'command': 'python', 'args': ['test.py']}
-  " echo dap#utils#create_message(l:adapter)
-  " let l:Testd = function('dap#requests#test')
-  " call l:Testd()
-  let l:config = {
-        \ 'request': 'launch',
-        \ 'program': 'main.py'
-        \ }
-  let l:adapter = {
-        \ 'type': 'executable',
-        \ 'command': 'python',
-        \ 'args': ['/home/kazeht/.dap-adapters/debugpy/src/debugpy/adapter']
-        \ }
-  " let l:session = dap#session#create()
-  let l:session = dap#session#create(l:adapter, l:config)
-  call dap#session#start(l:session)
-  " call dap#session#spawn(l:session, function('OnResult'))
+function OnResult()
 endfunction
 
 function! dap#session#step_action(action)

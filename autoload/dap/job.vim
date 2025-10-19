@@ -16,6 +16,9 @@ function! dap#job#spawn(commands, params)
   endif
 endfunction
 
+function! dap#job#end_spawned(job_id)
+	call job_stop(a:job_id)
+endfunction
 
 function! dap#job#send(job_id, data)
   if has('channel')
