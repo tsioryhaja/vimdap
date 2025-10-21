@@ -81,6 +81,8 @@ endfunction
 
 function! dap#events#terminated(session, data)
 	call dap#session#on_terminated(a:session)
+	call sign_unplace("dap-stopped-group")
+	echo "Session Terminated"
 endfunction
 
 " use terminated for cleaning session but not exited
