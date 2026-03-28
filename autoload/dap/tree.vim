@@ -77,7 +77,7 @@ function! dap#tree#render(session, node, rerender)
       if a:node.children == v:null
         let a:node.children = []
         " call the request to load it here
-        let l:variables_value = dap#requests#sync_variables(a:session, a:node)
+        let l:variables_value = dap#requests#sync_variables(a:session, a:node.reference)
         for l:variable in l:variables_value.body.variables
           let l:new_node = dap#tree#make_nodes(l:variable.variablesReference, l:variable.name, v:false, a:node.level + 1, l:variable.type)
           let l:new_node.value = l:variable.value

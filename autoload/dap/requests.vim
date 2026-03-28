@@ -143,9 +143,9 @@ function! dap#requests#response_variables(session, result)
   endif
 endfunction
 
-function! dap#requests#sync_variables(session, node)
-  let l:reference = a:node.reference
-  let l:params = {"variablesReference": l:reference}
+function! dap#requests#sync_variables(session, reference)
+  " let l:reference = a:node.reference
+  let l:params = {"variablesReference": a:reference}
   return dap#session#ask_request(a:session, "variables", l:params)
 endfunction
 
