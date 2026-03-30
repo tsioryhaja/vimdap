@@ -60,6 +60,21 @@ endfunction
 " 	let l:tabs = 
 " endfunction
 
+function! dap#tree#load_variable_children(session, node)
+  let l:children = []
+  " call the request to load it here
+  let l:variables_value = dap#requests#sync_variables(a:session, a:node.reference)
+  for l:variable in l:variables_value.body.variables
+    let l:new_node = dap#tree#make_nodes(l:variable.variablesReference, l:variable.name, v:false, a:node.level + 1, l:variable.type)
+    let l:new_node.value = l:variable.value
+    call add(l:children, l:new_node)
+  endfor
+  return l:children
+endfunction
+
+function! dap#tree#load_source_children(session, node)
+endfunction
+
 function! dap#tree#render(session, node, rerender)
   let a:node.rerender = a:rerender
 	let l:result = ""
@@ -75,14 +90,7 @@ function! dap#tree#render(session, node, rerender)
     if a:node.expanded
       let l:value = l:value . '[-]'
       if a:node.children == v:null
-        let a:node.children = []
-        " call the request to load it here
-        let l:variables_value = dap#requests#sync_variables(a:session, a:node.reference)
-        for l:variable in l:variables_value.body.variables
-          let l:new_node = dap#tree#make_nodes(l:variable.variablesReference, l:variable.name, v:false, a:node.level + 1, l:variable.type)
-          let l:new_node.value = l:variable.value
-          call add(a:node.children, l:new_node)
-        endfor
+        let a:node.children = dap#tree#load_variable_children(a:session, a:node)
       endif
       for l:child in a:node.children
         let l:c = dap#tree#render(a:session, l:child, a:rerender)
