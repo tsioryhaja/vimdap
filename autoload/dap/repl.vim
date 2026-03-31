@@ -198,13 +198,6 @@ function! dap#repl#clear_signs()
 	endif
 endfunction
 
-function! dap#repl#stack_traces()
-  let l:sessions = dap#session#get_stopped_sessions()
-  for l:session in l:sessions
-    call dap#repl#stack_trace(l:session)
-  endfor
-endfunction
-
 function! dap#repl#stack_trace(session)
 	let l:threadId = a:session.stopped_thread_id
 	let l:response = dap#requests#stack_trace(a:session, l:threadId)
