@@ -21,7 +21,7 @@ function! dap#tree#store_nodes(node)
   return sign_name
 endfunction
 
-function! dap#tree#make_nodes(reference, name, expanded, level, _type)
+function! dap#tree#make_nodes(reference, name, expanded, level, _type, child_loader)
   let l:expandable = v:false
   if a:reference > 0
     let l:expandable = v:true
@@ -38,7 +38,8 @@ function! dap#tree#make_nodes(reference, name, expanded, level, _type)
         \ "signs": [],
         \ "rerender": v:null,
         \ "length": 1,
-				\ "children": v:null
+				\ "children": v:null,
+				\ "child_loader": a:child_loader
         \ }
   if l:expandable == v:true
     let l:node.sign = dap#tree#store_nodes(l:node)
