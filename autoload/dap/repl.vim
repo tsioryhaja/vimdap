@@ -234,3 +234,11 @@ function! dap#repl#stack_trace(session)
   call writefile([json_encode(l:results)], 'stacktrace_result.txt', 'a')
 	call dap#repl#print_node_renders(l:results)
 endfunction
+
+" TODO: first thing to do is make one for the variables. You need get the scopes
+" first and then load the variables from that after wards (look specs for
+" request 'scopes' and then type 'Scope' and use the request variable after
+" that)
+"
+" Second thing then we also need to make it so that printing can be done for
+" any buffer and not just the repl buffer so that anyone can make their own widgets
