@@ -218,13 +218,15 @@ function! dap#repl#stack_trace(session)
 	let l:root_node.children = []
 	for l:stackFrame in l:stackFrames
     if has_key(l:stackFrame, 'source') && type(l:stackFrame.source) == v:t_dict
-			let l:name = l:stackFrame.name . " on " . l:stackFrame.line
+			let l:name = l:stackFrame.name
 			let l:referenceId = l:stackFrame.source.sourceReference
 			let l:path = l:stackFrame.source.path
 			let l:node = dap#tree#make_nodes(1, l:name, v:true, 1, "", function("dap#tree#load_source_children"))
-			let l:child = dap#tree#make_nodes(0, "path", v:false, 2, "", function("dap#tree#load_source_children"))
-			let l:child.value = l:path
-			let l:node.children = [l:child]
+			let l:child_path = dap#tree#make_nodes(0, "path", v:false, 2, "", function("dap#tree#load_source_children"))
+			let l:child_path.value = l:path
+			let l:child_line = dap#tree#make_nodes(0, "line", v:false, 2, "", function("dap#tree#load_source_children"))
+			let l:child_line.value = l:stackFrame.line
+			let l:node.children = [l:child_path, l:child_line]
 			call add(l:root_node.children, l:node)
 		endif
 	endfor
