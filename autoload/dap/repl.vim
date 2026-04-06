@@ -10,6 +10,13 @@ function! dap#repl#evaluate_callback(text)
   endfor
 endfunction
 
+function! dap#repl#stacktrace_callback()
+  let l:sessions = dap#session#get_stopped_sessions()
+  for l:session in l:sessions
+		call dap#repl#stack_trace(l:session)
+  endfor
+endfunction
+
 function! dap#repl#execute(session, text)
   if a:session.current_frame == v:null
     return
@@ -21,20 +28,14 @@ function! dap#repl#execute(session, text)
       call printf(l:body.result)
       call dap#repl#print(l:body.result, line('$'))
     else
-      let l:node = dap#tree#make_nodes(l:body.variablesReference, '', v:true, 0, l:body.type)
+      let l:node = dap#tree#make_nodes(l:body.variablesReference, '', v:true, 0, l:body.type, function("dap#tree#load_variable_children"))
       let l:node.rerender = l:node.sign
       let l:results = dap#tree#render(a:session, l:node, l:node.sign)
       if len(l:results) > 0
         let l:results[0] = {"value": l:body.result, "sign": v:null, "signs": []}
       endif
       " call dap#repl#print({"value": string(l:results), "sign": v:null})
-			let l:cline = line('$')
-			let l:i = 0
-			for l:result in l:results
-				let l:c_line = l:cline + l:i
-        call dap#repl#print(l:result, l:c_line)
-				let l:i = l:i + 1
-      endfor
+			call dap#repl#print_node_renders(results)
     endif
   endif
 endfunction
@@ -198,8 +199,36 @@ function! dap#repl#clear_signs()
 	endif
 endfunction
 
+function! dap#repl#print_node_renders(results)
+	let l:cline = line('$')
+	let l:i = 0
+	for l:result in a:results
+		let l:c_line = l:cline + l:i
+		call dap#repl#print(l:result, l:c_line)
+		let l:i = l:i + 1
+	endfor
+endfunction
+
 function! dap#repl#stack_trace(session)
 	let l:threadId = a:session.stopped_thread_id
 	let l:response = dap#requests#stack_trace(a:session, l:threadId)
   let l:stackFrames = l:response.body.stackFrames
+  call writefile([json_encode(l:stackFrames)], 'stacktrace.txt', 'a')
+	let l:root_node = dap#tree#make_nodes(1, "stack trace", v:true, 0, "", function("dap#tree#load_source_children"))
+	let l:root_node.children = []
+	for l:stackFrame in l:stackFrames
+    if has_key(l:stackFrame, 'source') && type(l:stackFrame.source) == v:t_dict
+			let l:name = l:stackFrame.name . " on " . l:stackFrame.line
+			let l:referenceId = l:stackFrame.source.sourceReference
+			let l:path = l:stackFrame.source.path
+			let l:node = dap#tree#make_nodes(1, l:name, v:true, 1, "", function("dap#tree#load_source_children"))
+			let l:child = dap#tree#make_nodes(0, "path", v:false, 2, "", function("dap#tree#load_source_children"))
+			let l:child.value = l:path
+			let l:node.children = [l:child]
+			call add(l:root_node.children, l:node)
+		endif
+	endfor
+	let l:results = dap#tree#render(a:session, l:root_node, l:root_node.sign)
+  call writefile([json_encode(l:results)], 'stacktrace_result.txt', 'a')
+	call dap#repl#print_node_renders(l:results)
 endfunction

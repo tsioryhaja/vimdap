@@ -133,7 +133,7 @@ function! dap#requests#response_variables(session, result)
     let l:variable = a:session.variables_request_seq_ref[l:req_seq]
     let l:result = []
     for l:d in a:result.body.variables
-      let l:node = dap#tree#make_nodes(l:d.variablesReference, l:d.name, v:false, l:variable.level + 1, l:d.type)
+      let l:node = dap#tree#make_nodes(l:d.variablesReference, l:d.name, v:false, l:variable.level + 1, l:d.type, function("dap#tree#load_variable_children"))
       if l:node.expandable == v:false
         let l:node.value = l:d.value
       endif

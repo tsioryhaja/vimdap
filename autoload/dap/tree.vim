@@ -66,7 +66,7 @@ function! dap#tree#load_variable_children(session, node)
   " call the request to load it here
   let l:variables_value = dap#requests#sync_variables(a:session, a:node.reference)
   for l:variable in l:variables_value.body.variables
-    let l:new_node = dap#tree#make_nodes(l:variable.variablesReference, l:variable.name, v:false, a:node.level + 1, l:variable.type, function("dap#tree#load_variable_children(session, node)"))
+    let l:new_node = dap#tree#make_nodes(l:variable.variablesReference, l:variable.name, v:false, a:node.level + 1, l:variable.type, function("dap#tree#load_variable_children"))
     let l:new_node.value = l:variable.value
     call add(l:children, l:new_node)
   endfor
@@ -91,7 +91,8 @@ function! dap#tree#render(session, node, rerender)
     if a:node.expanded
       let l:value = l:value . '[-]'
       if a:node.children == v:null
-        let a:node.children = dap#tree#load_variable_children(a:session, a:node)
+				let l:ChildLoader = a:node.child_loader
+				let a:node.children = l:ChildLoader(a:session, a:node)
       endif
       for l:child in a:node.children
         let l:c = dap#tree#render(a:session, l:child, a:rerender)
