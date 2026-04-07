@@ -237,5 +237,9 @@ endfunction
 " request 'scopes' and then type 'Scope' and use the request variable after
 " that)
 "
+" We also need to make the print usable with another buffer
+" Use the function getbufinfo(bufnr)[0].linecount
+" to get the number of line of a specific buffer
+"
 " Second thing then we also need to make it so that printing can be done for
 " any buffer and not just the repl buffer so that anyone can make their own widgets
