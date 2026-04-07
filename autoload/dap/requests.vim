@@ -116,7 +116,6 @@ function! dap#requests#configuration_done(session, on_result)
   endif
 endfunction
 
-
 function! dap#requests#response_configuration_done(session, result)
 endfunction
 
@@ -147,6 +146,11 @@ function! dap#requests#sync_variables(session, reference)
   " let l:reference = a:node.reference
   let l:params = {"variablesReference": a:reference}
   return dap#session#ask_request(a:session, "variables", l:params)
+endfunction
+
+function! dap#requests#scopes(session, frameId)
+	let l:params =  {"frameId": a:frameId}
+	return dap#session#ask_request(a:session, "scopes", l:params)
 endfunction
 
 function! dap#requests#stack_trace(session, threadId)

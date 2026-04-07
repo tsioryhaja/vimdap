@@ -20,6 +20,16 @@ function! dap#repl#stacktrace_callback()
   endfor
 endfunction
 
+function! dap#repl#scopes_callback()
+	if s:repl_buf == v:null
+		call dap#repl#create_new_buf()
+	endif
+	let l:sessions = dap#session#get_stopped_sessions()
+	for l:session in l:sessions
+		call dap#repl#scopes(l:session, s:repl_buf)
+	endfor
+endfunction
+
 function! dap#repl#execute(session, text, bufnr)
   if a:session.current_frame == v:null
     return
@@ -243,6 +253,23 @@ function! dap#repl#stack_trace(session, bufnr)
 	endfor
 	let l:results = dap#tree#render(a:session, l:root_node, l:root_node.sign)
   call writefile([json_encode(l:results)], 'stacktrace_result.txt', 'a')
+	call dap#repl#print_node_renders(l:results, a:bufnr)
+endfunction
+
+function! dap#repl#scopes(session, bufnr)
+	let l:threadId = a:session.stopped_thread_id
+	let l:response = dap#requests#stack_trace(a:session, l:threadId)
+  let l:stackFrames = l:response.body.stackFrames
+  let l:current_frame = dap#events#get_top_frame(l:stackFrames)
+	let l:scopes_response = dap#requests#scopes(a:session, l:current_frame.id)
+	let l:scopes = l:scopes_response.body.scopes
+	let l:root_node = dap#tree#make_nodes(1, "scopes", v:true, 0, "", function("dap#tree#load_variable_children"))
+	let l:root_node.children = []
+	for l:scope in l:scopes
+		let l:node = dap#tree#make_nodes(l:scope.variablesReference, l:scope.name, v:false, 1, "reference", function("dap#tree#load_variable_children"))
+		call add(l:root_node.children, l:node)
+	endfor
+	let l:results = dap#tree#render(a:session, l:root_node, l:root_node.sign)
 	call dap#repl#print_node_renders(l:results, a:bufnr)
 endfunction
 

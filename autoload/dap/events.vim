@@ -35,7 +35,7 @@ function! dap#events#thread(session, data)
   let a:session.threads[a:data.body.threadId] = l:result
 endfunction
 
-functio GetTopFrame(frames)
+function! dap#events#get_top_frame(frames)
   for l:frame in a:frames
     if has_key(l:frame, 'source') && type(l:frame.source) == v:t_dict
       return l:frame
@@ -66,7 +66,7 @@ function! dap#events#stopped(session, data)
   let l:thread = a:session.threads[l:stopped.threadId]
   let l:response = dap#requests#stack_trace(a:session, l:stopped.threadId)
   let l:stackFrames = l:response.body.stackFrames
-  let l:current_frame = GetTopFrame(l:stackFrames)
+  let l:current_frame = dap#events#get_top_frame(l:stackFrames)
   let a:session.current_frame = l:current_frame
   call writefile([json_encode(l:current_frame)], 'test.txt', 'a')
   let l:source = l:current_frame.source
