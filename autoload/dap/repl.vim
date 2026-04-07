@@ -34,7 +34,6 @@ function! dap#repl#execute(session, text)
       if len(l:results) > 0
         let l:results[0] = {"value": l:body.result, "sign": v:null, "signs": []}
       endif
-      " call dap#repl#print({"value": string(l:results), "sign": v:null})
 			call dap#repl#print_node_renders(results)
     endif
   endif
@@ -57,7 +56,6 @@ function! dap#repl#trigger_actions(parameter)
   if l:mode == "anode"
     let l:placed = sign_getplaced(s:repl_buf, {"group": "anchor_dapinfo", "lnum": line('.')})
 		let l:placed = l:placed[0]
-    " call dap#repl#print({"value": string(l:placed), "sign": v:null})
 		let l:len_signs = len(l:placed.signs)
 		if l:len_signs > 1
 			echoerr "weird situation where we hve two anchor on a same line"
@@ -186,7 +184,6 @@ function! dap#repl#test_rewrite()
     call dap#repl#create_new_buf()
   endif
   let l:l_count = getbufinfo(s:repl_buf)[0].linecount
-  " call dap#repl#print("number of line: " . l:l_count)
   let l:l_count4 = l:l_count - 4
   let l:l_count2 = l:l_count - 3
   call deletebufline(s:repl_buf, l:l_count4, l:l_count2)
