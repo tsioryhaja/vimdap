@@ -1,0 +1,30 @@
+[
+  {
+		"name": "pjsuaserver",
+		"language": "python",
+		"adapter": {
+			"type": "server",
+			"port": "${port}",
+      "justMyCode": false,
+			"executable": {
+				"command": "python",
+				"args": [
+					"C:\\tools\\debugpy\\bundled\\libs\\debugpy",
+					"--listen",
+					"0.0.0.0:${port}",
+          "--wait-for-client",
+					"main.py"
+					],
+				"detached": false,
+        "justMyCode": false
+			}
+		},
+		"configuration": {
+			"request": "attach",
+      "justMyCode": false,
+      "env": {
+        "LD_LIBRARY_PATH": "/mnt/c/projects/opensource/rtp_server/pjsua_out/debian:$LD_LIBRARY_PATH"
+      }
+		}
+	}
+]

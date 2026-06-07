@@ -193,6 +193,19 @@ function! dap#session#restart(session)
 	call dap#requests#terminate(a:session, v:true)
 endfunction
 
+function! dap#session#attach(session)
+	let l:port = a:session.adapter.port
+	let l:host = "127.0.0.1"
+	if has_key(a:session.adapter, "host")
+		let l:host = a:session.adapter.host
+	endif
+	let l:command_to = ["nc", l:host, l:port]
+	let l:spawn_params = {
+				\ "stdio": [function('OnStdout'), function('OnStderr'), function('OnExit')],
+				\ "env": {},
+				\ }
+endfunc
+
 function! dap#session#spawn(session)
   let l:adapter = a:session.adapter
 	let l:config = a:session.config
