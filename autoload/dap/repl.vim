@@ -40,7 +40,7 @@ function! dap#repl#execute(session, text, bufnr)
     if l:body.variablesReference <= 0
       call printf(l:body.result)
 			let l:line_count = getbufinfo(a:bufnr)[0].linecount
-      call dap#repl#print(l:body.result, l:line_count, bufnr)
+      call dap#repl#print(l:body.result, l:line_count, a:bufnr)
     else
       let l:node = dap#tree#make_nodes(l:body.variablesReference, '', v:true, 0, l:body.type, function("dap#tree#load_variable_children"))
       let l:node.rerender = l:node.sign
