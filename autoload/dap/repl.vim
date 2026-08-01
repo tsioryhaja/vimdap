@@ -38,9 +38,10 @@ function! dap#repl#execute(session, text, bufnr)
   if l:evaluate_result.success == v:true
     let l:body = l:evaluate_result.body
     if l:body.variablesReference <= 0
-      call printf(l:body.result)
 			let l:line_count = getbufinfo(a:bufnr)[0].linecount
-      call dap#repl#print(l:body.result, l:line_count, a:bufnr)
+			" need to make a node here
+      " call dap#repl#print(l:body.result, l:line_count, a:bufnr)
+			call appendbufline(a:bufnr, l:line_count - 1, l:body.result)
     else
       let l:node = dap#tree#make_nodes(l:body.variablesReference, '', v:true, 0, l:body.type, function("dap#tree#load_variable_children"))
       let l:node.rerender = l:node.sign
