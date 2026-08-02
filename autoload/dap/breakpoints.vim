@@ -17,8 +17,10 @@ endfunction
 function! dap#breakpoints#get_default_breakpoints_filters(session)
   let l:default_filters = []
   for l:d in a:session.capabilities.exceptionBreakpointFilters
-    if l:d.default
-      call add(l:default_filters, l:d.filter)
+		if has_key(d, "default")
+			if l:d.default
+				call add(l:default_filters, l:d.filter)
+			endif
     endif
   endfor
   return l:default_filters
